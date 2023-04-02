@@ -78,7 +78,7 @@ const App = ({ title, isOfficeInitialized }) => {
   return (
 
 
-    <div>
+    <div class="font-[Arial]">
       <div class="bg-gray-100 border-b shadow-sm">
         <div className="mx-4 py-4">
           <div class="select-none mb-8 text-center">
@@ -117,9 +117,9 @@ const App = ({ title, isOfficeInitialized }) => {
         </div>
       </div>
 
-      <div className="m-4 py-4">
-        {companyData && <>
-          <div className="flex-col md:flex md:space-x-2 pb-2 border-b">
+      <div className="m-4">
+        {companyData.company_number && <>
+          <div className="flex-col md:flex md:space-x-2 pb-4 border-b">
             <h1 className="text-2xl font-bold tracking-tight">{companyData.company_name}</h1>
             <h1 className="text-md font-medium">Company number: <span className="font-mono font-bold">{companyData.company_number}</span></h1>
             <div className="flex cursor-pointer text-blue-400 underline text-xs w-max">
@@ -139,14 +139,15 @@ const App = ({ title, isOfficeInitialized }) => {
 
             </div>
 
-            <div>
-              <h1>Company type:</h1>
-              <p className=" font-bold">{companyData.type}</p>
-            </div>
-
-            <div>
-              <h1>Incorporated on</h1>
-              <p className=" font-bold">{companyData.date_of_creation}</p>
+            <div class="flex justify-between mr-12 ">
+              <div>
+                <h1>Company type:</h1>
+                <p className=" font-bold">{companyData.type}</p>
+              </div>
+              <div>
+                <h1>Incorporated on</h1>
+                <p className=" font-bold">{companyData.date_of_creation}</p>
+              </div>
             </div>
 
             <div>
