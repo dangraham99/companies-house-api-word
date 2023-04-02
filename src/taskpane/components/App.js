@@ -11,10 +11,9 @@ const App = ({ title, isOfficeInitialized }) => {
 
 
   const [companyNumber, setCompanyNumber] = useState('')
-
   const [formValid, setFormValid] = useState(false)
-
-  const [companyData, setCompanyData] = useState(null)
+  const [companyData, setCompanyData] = useState({})
+  const [companyFormattedAddress, setCompanyFormattedAddress] = useState('')
 
   useEffect(() => {
     if (companyNumber.trim().length > 0) {
@@ -27,6 +26,20 @@ const App = ({ title, isOfficeInitialized }) => {
       setFormValid(false)
     }
   }, [companyNumber])
+
+
+  useEffect(() => {
+    setCompanyFormattedAddress(
+      `${companyData.registered_office_address?.po_box ? `${companyData.registered_office_address.po_box},` : ''} 
+  ${companyData.registered_office_address?.premises ? `${companyData.registered_office_address.premises},` : ''} 
+  ${companyData.registered_office_address?.address_line_1 ? `${companyData.registered_office_address.address_line_1},` : ''} 
+  ${companyData.registered_office_address?.address_line_2 ? `${companyData.registered_office_address.address_line_2},` : ''}
+  ${companyData.registered_office_address?.locality ? `${companyData.registered_office_address.locality},` : ''}  
+  ${companyData.registered_office_address?.region ? `${companyData.registered_office_address.region},` : ''} 
+  ${companyData.registered_office_address?.country ? `${companyData.registered_office_address.country},` : ''}
+  ${companyData.registered_office_address?.postal_code ? `${companyData.registered_office_address.postal_code}` : ''} `.trim()
+    )
+  }, [companyData])
 
 
   const click = async () => {
@@ -44,6 +57,9 @@ const App = ({ title, isOfficeInitialized }) => {
         await getCompanyInfo(companyNumber).then(result => {
           console.log(result);
           setCompanyData(result)
+
+          console.log(companyFormattedAddress)
+
         }).catch(e => console.log(e.message));
 
 
@@ -119,7 +135,7 @@ const App = ({ title, isOfficeInitialized }) => {
 
             <div>
               <h1 >Registered office address:</h1>
-              <p className=" font-bold">{Object.values(companyData.registered_office_address).reverse().join(", ")}</p>
+              <p className=" font-bold">{companyFormattedAddress}</p>
 
             </div>
 
