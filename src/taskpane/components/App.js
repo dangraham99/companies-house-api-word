@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { getCompanyInfo } from "../../api/companies-house";
+import constants from "../../../constants";
+import { setTextRange } from "typescript";
+
 
 
 
@@ -9,11 +12,11 @@ import { getCompanyInfo } from "../../api/companies-house";
 
 const App = ({ title, isOfficeInitialized }) => {
 
-
   const [companyNumber, setCompanyNumber] = useState('')
   const [formValid, setFormValid] = useState(false)
   const [companyData, setCompanyData] = useState({})
   const [companyFormattedAddress, setCompanyFormattedAddress] = useState('')
+  const [companyDescription, setCompanyDescription] = useState('')
 
   useEffect(() => {
     if (companyNumber.trim().length > 0) {
@@ -37,8 +40,17 @@ const App = ({ title, isOfficeInitialized }) => {
   ${companyData.registered_office_address?.locality ? `${companyData.registered_office_address.locality},` : ''}  
   ${companyData.registered_office_address?.region ? `${companyData.registered_office_address.region},` : ''} 
   ${companyData.registered_office_address?.country ? `${companyData.registered_office_address.country},` : ''}
-  ${companyData.registered_office_address?.postal_code ? `${companyData.registered_office_address.postal_code}` : ''} `.trim()
+  ${companyData.registered_office_address?.postal_code ? `${companyData.registered_office_address.postal_code}` : ''} `.trim().replace(/\s+/g, ' ')
     )
+
+    console.log(companyFormattedAddress)
+  }, [companyData])
+
+
+  useEffect(() => {
+    if (companyData?.type) {
+      setCompanyDescription(constants.company_summary[companyData.type])
+    }
   }, [companyData])
 
 
@@ -48,11 +60,7 @@ const App = ({ title, isOfficeInitialized }) => {
        * Insert your Word code here
        */
       if (formValid) {
-        // insert a paragraph at the end of the document.
-        const paragraph = context.document.body.insertParagraph(companyNumber, Word.InsertLocation.end);
 
-        // change the paragraph color to blue.
-        paragraph.font.color = "blue";
 
         await getCompanyInfo(companyNumber).then(result => {
           console.log(result);
@@ -69,9 +77,23 @@ const App = ({ title, isOfficeInitialized }) => {
     });
   };
 
+  const insertCompanyInfo = async (information) => {
+    return Word.run(async (context) => {
+      if (companyData) {
+        const currentSelection = context.document.getSelection();
+        const text = currentSelection.insertText(information, 'End');
+        text.select('End');
+
+
+
+      }
+      await context.sync();
+    });
+  };
+
   if (!isOfficeInitialized) {
     return (
-      <div>Please run this app within an Office application.</div>
+      <div>Please run this app within an Office application. If you are running this app within a Microsoft Office application, refresh this taskpane using the chevron at the top of the taskpane.</div>
     );
   }
 
@@ -82,8 +104,9 @@ const App = ({ title, isOfficeInitialized }) => {
       <div class="bg-gray-100 border-b shadow-sm">
         <div className="mx-4 py-4">
           <div class="select-none mb-8 text-center">
+            <h1 className="text-xs pt-4 font-bold text-red-500 uppercase">INTERNAL USE ONLY</h1>
             <h1 className="text-xl pt-4 font-bold">Companies House API</h1>
-            <h1 className="text-xs pt-4 font-medium tracking-widest uppercase">INTERNAL USE ONLY</h1>
+
           </div>
           <label htmlFor="first-name" className="block text-sm font-medium leading-6 text-gray-900">
             Company number
@@ -117,10 +140,10 @@ const App = ({ title, isOfficeInitialized }) => {
         </div>
       </div>
 
-      <div className="m-4">
+      <div className="m-4 min-h-screen overflow-y-auto">
         {companyData.company_number && <>
           <div className="flex-col md:flex md:space-x-2 pb-4 border-b">
-            <h1 className="text-2xl font-bold tracking-tight">{companyData.company_name}</h1>
+            <h1 className="text-2xl font-bold pb-2 tracking-tight">{companyData.company_name}</h1>
             <h1 className="text-md font-medium">Company number: <span className="font-mono font-bold">{companyData.company_number}</span></h1>
             <div className="flex cursor-pointer text-blue-400 underline text-xs w-max">
               <a href={`https://find-and-update.company-information.service.gov.uk/company/${companyData.company_number}`}>View on Companies House</a>
@@ -142,10 +165,10 @@ const App = ({ title, isOfficeInitialized }) => {
             <div class="flex justify-between mr-12 ">
               <div>
                 <h1>Company type:</h1>
-                <p className=" font-bold">{companyData.type}</p>
+                <p className=" font-bold">{companyDescription}</p>
               </div>
               <div>
-                <h1>Incorporated on</h1>
+                <h1>{constants.company_birth_type[companyData.type]}:</h1>
                 <p className=" font-bold">{companyData.date_of_creation}</p>
               </div>
             </div>
@@ -158,17 +181,21 @@ const App = ({ title, isOfficeInitialized }) => {
 
           </div>
 
-          <div className="text-blue-400 mt-8 text-blue-400 underline flex space-x-2">
-            <div className="cursor-pointer">
+          <div className="text-blue-400 mt-8 mb-4 text-blue-400 underline flex-col space-y-2">
+            <div onClick={() => insertCompanyInfo("Feature not yet implemented")} className="cursor-pointer">
               <p>Insert all company info</p>
             </div>
 
-            <div className="cursor-pointer">
+            <div onClick={() => insertCompanyInfo(companyData.company_name)} className="cursor-pointer">
               <p>Insert company name</p>
             </div>
 
-            <div className="cursor-pointer">
+            <div onClick={() => insertCompanyInfo(companyData.company_number)} className="cursor-pointer">
               <p>Insert company number</p>
+            </div>
+
+            <div onClick={() => insertCompanyInfo(companyFormattedAddress.trim())} className="cursor-pointer">
+              <p>Insert company address</p>
             </div>
 
             <div className="cursor-pointer">
@@ -178,6 +205,13 @@ const App = ({ title, isOfficeInitialized }) => {
         </>
         }
       </div>
+
+
+
+      <footer class="fixed bottom-0 left-0 z-20 w-full p-4 border-t  shadow-sm md:flex md:items-center md:justify-between md:p-6 bg-gray-100">
+        <span class="text-xs sm:text-center">Data accessed using <a className="underline" href="https://developer.company-information.service.gov.uk/">Companies House API</a>. The most up to date version of content will always be on GOV.UK
+        </span>
+      </footer>
 
 
     </div>
