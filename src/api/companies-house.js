@@ -1,4 +1,4 @@
-const endpoint = "http://localhost:8081/company"
+const endpoint = "https://companieshouseproxy.azurewebsites.net/api/GetCompanyDetails?code=7aHuIoF3BugXdwISAgKmo_gboQ8P29Q_OeIFP9R7lvScAzFu27q8iA=="
 
 
 
@@ -10,7 +10,7 @@ const getCompanyInfo = async (companyNumber) => {
     };
 
     try {
-        const response = await fetch(endpoint + `/${companyNumber}`, requestOptions)
+        const response = await fetch(endpoint + `&companyNumber=${companyNumber}`, requestOptions)
 
         const result = await response.json()
         return result
