@@ -13,6 +13,7 @@ const getCompanyInfo = async (companyNumber) => {
         const response = await fetch(endpoint + `&companyNumber=${companyNumber}`, requestOptions)
 
         const result = await response.json()
+
         return result
     }
 

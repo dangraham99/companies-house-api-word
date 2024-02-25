@@ -4,6 +4,7 @@ function CompanyInfo(props) {
 
     const [companyFormattedAddress, setCompanyFormattedAddress] = useState('')
     const [companyDescription, setCompanyDescription] = useState('')
+    const [companyDesignation, setCompanyDesignation] = useState(false)
 
     const insertCompanyInfo = async (information) => {
         return Word.run(async (context) => {
@@ -11,24 +12,17 @@ function CompanyInfo(props) {
                 const currentSelection = context.document.getSelection();
                 const text = currentSelection.insertText(information, 'End');
                 text.select('End');
-
-
-
             }
+
             await context.sync();
         });
     };
 
 
 
-    useEffect(() => {
-        if (props.companyData?.type) {
-            setCompanyDescription(constants.company_summary[props.companyData.type])
-        }
-    }, [props.companyData])
-
 
     useEffect(() => {
+
 
         if (props.companyData?.registered_office_address) {
             setCompanyFormattedAddress(
@@ -43,7 +37,38 @@ function CompanyInfo(props) {
             )
         }
         console.log(companyFormattedAddress)
+
     }, [props.companyData])
+
+
+    useEffect(() => {
+
+        if (props.companyData?.type) {
+            setCompanyDescription(constants.company_summary[props.companyData?.type])
+
+            if (constants.company_type[props.companyData?.type]) {
+                setCompanyDesignation(getCompanyDesignation())
+
+            }
+
+        }
+
+    }, [companyFormattedAddress])
+
+
+    const getCompanyDesignation = () => {
+        let designationParagraph = '';
+        switch (props.companyData?.type) {
+            // if a company
+            case ('private-unlimited' || 'ltd' || 'plc' || 'northern-ireland' || 'old-public-company' || 'private-limited-guarant-nsc-limited-exemption' || 'private-limited-guarant-nsc' || 'private-unlimited-nsc' || 'icvc-securities' || 'icvc-warrant' || 'icvc-umbrella' || 'private-limited-shares-section-30-exemption'):
+                designationParagraph = `${props.companyData.company_name}, a company incorporated under the Companies Acts (${props.companyData.company_number}) and having its registered office at ${companyFormattedAddress}`
+
+            case ('llp'):
+                designationParagraph = `${props.companyData.company_name}, a limited liability partnership incorporated under the Limited Liability Partnerships Act 2000 (${props.companyData.company_number}) and having a place of business at ${companyFormattedAddress}`
+        }
+
+        setCompanyDesignation(designationParagraph)
+    }
 
 
     return (
@@ -92,7 +117,7 @@ function CompanyInfo(props) {
                     <div onClick={() => insertCompanyInfo(companyFormattedAddress.trim())} className="cursor-pointer">
                         <p>Insert company address</p>
                     </div>
-                    <div className="cursor-pointer">
+                    <div onClick={() => insertCompanyInfo(companyDesignation.trim())} className="cursor-pointer">
                         <p>Insert company designation</p>
                     </div>
                 </div>
